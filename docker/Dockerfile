@@ -13,7 +13,16 @@ RUN apt-get install -y \
         # Makes stack viable in the container
         libgmp-dev \
         # Required for locales configuration.
-        locales
+        locales \
+        python3-pip \
+        git \
+        libtinfo-dev \
+        libzmq3-dev \
+        libcairo2-dev \
+        libpango1.0-dev \
+        libmagic-dev \
+        libblas-dev \
+        liblapack-dev
 
 # Our MNIST demo program outputs Unicode characters.
 RUN dpkg-reconfigure locales && \
@@ -30,3 +39,21 @@ RUN \
     ldconfig
 
 ENV LANG en_US.UTF-8
+
+RUN curl -sSL https://get.haskellstack.org/ | sh
+
+WORKDIR /
+
+RUN git clone https://github.com/gibiansky/IHaskell
+
+WORKDIR IHaskell
+
+RUN pip3 install --upgrade setuptools pip && pip3 install -r requirements.txt
+
+RUN stack install --install-ghc gtk2hs-buildtools
+
+RUN stack install --fast
+
+RUN stack exec ihaskell -- install --stack
+
+RUN stack exec jupyter -- notebook
